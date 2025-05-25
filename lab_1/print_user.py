@@ -1,39 +1,67 @@
-from prettytable import PrettyTable, ALL
-from textwrap import fill
+from datetime import datetime
 
-def print_users(users_data: list) -> None:
-    """Выводит список пользователей в виде форматированной таблицы
+def print_users(users):
+    if not users:
+        print("Нет пользователей для отображения")
+        return
     
-    Args:
-        users_data: Список кортежей с данными пользователей в формате:
-                   (user_id, login, password, family, name, patronymic, birth_date, born_date)
-    """
-    table = PrettyTable()
-    table.hrules = ALL
-    table.field_names = [
-        '№', 
-        'ID', 
-        'Логин', 
-        'Пароль', 
-        'Фамилия', 
-        'Имя',
-        'Отчество',
-        'Дата Рождения',
-        'Дата Создания Аккаунта'
+    # Определяем заголовки столбцов
+    headers = [
+        ("ID", 'id'),
+        ("Логин", 'login'),
+        ("Дата регистрации", 'reg_date'),
+        ("Фамилия", 'family'),
+        ("Имя", 'name'),
+        ("Отчество", 'patronymic'),
+        ("Дата рождения", 'birth_date')
     ]
-    table.align = 'l'
-    table.max_width = 20  # Максимальная ширина колонки
-    table.sortby = '№'
     
-    for i, user in enumerate(users_data, 1):
-        table.add_row([
-            i,
-            user[0],  # user_id
-            fill(user[2] if user[2] else '', width=15),  # last_name
-            fill(user[1] if user[1] else '', width=15),  # first_name
-            fill(user[3] if user[3] else '-', width=15),  # middle_name
-            fill(user[4], width=25),  # email
-            fill(user[5], width=15)  # password 
-        ], divider=True)
+    # Преобразуем данные пользователей в удобный формат
+    formatted_users = []
+    for user in users:
+        reg_date = user[2].strftime("%Y-%m-%d %H:%M:%S") if isinstance(user[2], datetime) else str(user[2])
+        birth_date = user[6].strftime("%Y-%m-%d") if isinstance(user[6], datetime) else str(user[6])
+        
+        formatted_users.append({
+            'id': str(user[0]),
+            'login': str(user[1]),
+            'reg_date': reg_date,
+            'family': str(user[3]),
+            'name': str(user[4]),
+            'patronymic': str(user[5]) if user[5] else '-',
+            'birth_date': birth_date
+        })
     
-    print(table.get_string())
+    # Вычисляем максимальную ширину для каждого столбца
+    col_widths = {}
+    for header, key in headers:
+        # Начинаем с ширины заголовка
+        max_width = len(header)
+        # Проверяем все данные пользователей для этого столбца
+        for user in formatted_users:
+            if len(user[key]) > max_width:
+                max_width = len(user[key])
+        # Добавляем небольшой отступ
+        col_widths[key] = max_width + 2
+    
+    # Строим строку формата для вывода
+    header_parts = []
+    for header, key in headers:
+        header_parts.append(f"{header:<{col_widths[key]}}")
+    header_line = " | ".join(header_parts)
+    
+    separator = '-' * len(header_line)
+    
+    print("\nСписок пользователей:")
+    print(separator)
+    print(header_line)
+    print(separator)
+    
+    for user in formatted_users:
+        user_parts = []
+        for _, key in headers:
+            user_parts.append(f"{user[key]:<{col_widths[key]}}")
+        user_line = " | ".join(user_parts)
+        print(user_line)
+    
+    print(separator)
