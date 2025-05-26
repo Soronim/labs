@@ -10,15 +10,15 @@ steps = [
     step("""
          CREATE TABLE accounts (
              user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-    family VARCHAR(150) NOT NULL
+    family VARCHAR(64) NOT NULL
         CHECK (family ~ '^[А-Яа-яЁё''’()\s-]+$')
         CONSTRAINT no_double_spaces_family CHECK (family !~ '\s{2}')
         CONSTRAINT no_leading_trailing_spaces_family CHECK (family = trim(family)),
-    name VARCHAR(150) NOT NULL
+    name VARCHAR(64) NOT NULL
         CHECK (name ~ '^[А-Яа-яЁё''’()\s-]+$')
         CONSTRAINT no_double_spaces_name CHECK (name !~ '\s{2}')
         CONSTRAINT no_leading_trailing_spaces_name CHECK (name = trim(name)),
-    patronymic VARCHAR(150)
+    patronymic VARCHAR(64)
         CHECK (patronymic ~ '^[А-Яа-яЁё''’()\s-]+$' OR patronymic IS NULL)
         CONSTRAINT no_double_spaces_patronymic CHECK (patronymic !~ '\s{2}' OR patronymic IS NULL)
         CONSTRAINT no_leading_trailing_spaces_patronymic CHECK (patronymic = trim(patronymic) OR patronymic IS NULL),

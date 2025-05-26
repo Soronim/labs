@@ -64,7 +64,7 @@ def validate_name(name: str, field_name: str, is_required: bool = True) -> bool:
 
 
 def validate_login(login: str, conn=None) -> bool:
-    """Проверяет корректность логина и его уникальность в базе данных"""
+    """Проверяет корректность логина и его уникальность в базе данных (регистронезависимо)"""
     if not login:
         print('Ошибка: логин не может быть пустым')
         return False
@@ -73,17 +73,22 @@ def validate_login(login: str, conn=None) -> bool:
         print('Ошибка: логин должен содержать минимум 4 символа')
         return False
     
+    if len(login) > 32:
+        print('Ошибка: логин должен содержать максимум 32 символа')
+        return False
+    
     if not re.match(r'^[a-zA-Z0-9_]+$', login):
         print('Ошибка: логин может содержать только латинские буквы, цифры и подчеркивание')
         return False
     
-    # Проверка уникальности логина, если передан connection
+    # Проверка уникальности логина (регистронезависимая), если передан connection
     if conn:
         try:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT id FROM users WHERE login = %s", (login,))
+                # Сравниваем lowercase версии логинов
+                cursor.execute("SELECT id FROM users WHERE LOWER(login) = LOWER(%s)", (login,))
                 if cursor.fetchone():
-                    print('Ошибка: этот логин уже занят')
+                    print('Ошибка: этот логин уже занят (учтите, что проверка не чувствительна к регистру)')
                     return False
         except Exception as e:
             print(f'Ошибка при проверке уникальности логина: {e}')

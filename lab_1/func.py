@@ -4,21 +4,7 @@ from datetime import datetime
 import psycopg2
 import re
 
-def register_user(conn, login, password, family, name, patronymic, birth_date):
-    try:
-        with conn.cursor() as cursor:
-            cursor.execute(
-                "SELECT register_user(%s, %s, %s, %s, %s, %s)",
-                (login, password, family, name, patronymic, birth_date)
-            )
-            user_id = cursor.fetchone()[0]
-            conn.commit()
-            return user_id
-    except Exception as e:
-        conn.rollback()
-        print(f"Ошибка при регистрации пользователя: {e}")
-        return None
-    
+
 
 def user_retrieve_all(conn):
     """Получает список всех пользователей из базы данных"""
@@ -36,8 +22,28 @@ def user_retrieve_all(conn):
         print(f"Ошибка при получении списка пользователей: {e}")
         return None
 
+def register_user(conn, login, password, family, name, patronymic, birth_date):
+    try:
+        with conn.cursor() as cursor:
+            # Вызываем процедуру регистрации
+            cursor.execute(
+                "CALL register_user(%s, %s, %s, %s, %s, %s, NULL)",
+                (login, password, family, name, patronymic, birth_date)
+            )
+            
+            # Получаем ID только что созданного пользователя
+            cursor.execute("SELECT id FROM users WHERE login = %s", (login,))
+            user_id = cursor.fetchone()[0]
+            
+            conn.commit()
+            return user_id  # Возвращаем ID пользователя
+            
+    except Exception as e:
+        conn.rollback()
+        print(f"Ошибка при регистрации пользователя: {e}")
+        return None
+
 def register_user_interactive(conn):
-    
     print('\nРегистрация нового пользователя:')
     
     login = get_valid_input('Логин: ', validate_login, conn) 

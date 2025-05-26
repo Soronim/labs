@@ -1,42 +1,35 @@
 from yoyo import step
 
 steps = [
-    step(
-        """
-        CREATE OR REPLACE FUNCTION register_user(
-            p_login VARCHAR(150),
-            p_password VARCHAR(128),
-            p_family VARCHAR(150),
-            p_name VARCHAR(150),
-            p_patronymic VARCHAR(150),
-            p_birth_date DATE
-        ) RETURNS INTEGER AS $$
-        DECLARE
-            user_id INTEGER;
-        BEGIN
-            -- Начало транзакции
-            BEGIN
-                
-                INSERT INTO users (login, password)
-                VALUES (p_login, p_password)
-                RETURNING id INTO user_id;
-                
-                
-                INSERT INTO accounts (user_id, family, name, patronymic, birth_date)
-                VALUES (user_id, p_family, p_name, p_patronymic, p_birth_date);
-                
-                
-                RETURN user_id;
-                
-            EXCEPTION
-                WHEN OTHERS THEN
-                    -- В случае ошибки откатываем транзакцию
-                    RAISE EXCEPTION 'Error during registration: %', SQLERRM;
-                    RETURN NULL;
-            END;
-        END;
-        $$ LANGUAGE plpgsql;
-        """,
-        "DROP FUNCTION IF EXISTS register_user(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, DATE)"
-    )
+    
+step(
+    """
+    CREATE OR REPLACE PROCEDURE register_user(
+    p_login VARCHAR(32),
+    p_password VARCHAR(128),
+    p_family VARCHAR(64),
+    p_name VARCHAR(64),
+    p_patronymic VARCHAR(64),
+    p_birth_date DATE,
+    INOUT user_id INTEGER DEFAULT NULL
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Вставка в таблицу users
+    INSERT INTO users (login, password)
+    VALUES (p_login, p_password)
+    RETURNING id INTO user_id;
+    
+    -- Вставка в таблицу accounts
+    INSERT INTO accounts (user_id, family, name, patronymic, birth_date)
+    VALUES (user_id, p_family, p_name, p_patronymic, p_birth_date);
+    
+EXCEPTION WHEN OTHERS THEN
+    RAISE EXCEPTION 'Registration failed: %', SQLERRM;
+END;
+$$;
+    """,
+    "DROP PROCEDURE IF EXISTS register_user(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, DATE, OUT INTEGER)"
+)
 ]

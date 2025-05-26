@@ -10,7 +10,7 @@ steps = [
     step("""
          CREATE TABLE users (
             id SERIAL PRIMARY KEY,
-            login VARCHAR(50) UNIQUE NOT NULL,
+            login VARCHAR(32) UNIQUE NOT NULL,
             password VARCHAR(128) NOT NULL
                 CONSTRAINT password_length CHECK (LENGTH(password) >= 8)
                 CONSTRAINT password_uppercase CHECK (password ~ '[A-Z]')
