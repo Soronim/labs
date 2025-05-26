@@ -16,16 +16,16 @@ steps = [
         BEGIN
             -- Начало транзакции
             BEGIN
-                -- Вставляем данные в таблицу users
+                
                 INSERT INTO users (login, password)
                 VALUES (p_login, p_password)
                 RETURNING id INTO user_id;
                 
-                -- Вставляем данные в таблицу accounts
+                
                 INSERT INTO accounts (user_id, family, name, patronymic, birth_date)
                 VALUES (user_id, p_family, p_name, p_patronymic, p_birth_date);
                 
-                -- Если все успешно, возвращаем ID пользователя
+                
                 RETURN user_id;
                 
             EXCEPTION
