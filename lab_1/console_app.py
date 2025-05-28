@@ -17,7 +17,9 @@ menu = '''
 '''
 
 def main():
+    
     """Основная функция приложения"""
+    
     conn = get_db_connection()
     
     try:

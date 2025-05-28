@@ -27,7 +27,7 @@ def register_user(conn, login, password, family, name, patronymic, birth_date):
         with conn.cursor() as cursor:
             # Вызываем процедуру регистрации
             cursor.execute(
-                "CALL register_user(%s, %s, %s, %s, %s, %s, NULL)",
+                "CALL register_user(%s, %s, %s, %s, %s, %s,NULL)",
                 (login, password, family, name, patronymic, birth_date)
             )
             
