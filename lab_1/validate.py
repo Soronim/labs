@@ -3,6 +3,14 @@ from datetime import datetime
 import psycopg2
 import re
 
+def is_leap_year(year):
+    """Проверяет, является ли год високосным"""
+    if year % 4 != 0:
+        return False
+    elif year % 100 != 0:
+        return True
+    else:
+        return year % 400 == 0
 
 def capitalize_name(name):
     """Приводит имя к виду с заглавной первой буквой, остальные - строчные"""
@@ -127,31 +135,60 @@ def validate_password(password: str) -> bool:
     
     return True
 
-def validate_date(date_str: str) -> bool:
-    """Проверяет корректность даты и что возраст пользователя не менее 14 лет"""
+
+
+def validate_date(date_str):
+    """
+    Проверяет, является ли строка корректной датой в формате ГГГГ-ММ-ДД или ГГГГ-М-Д.
+    Проверяет что пользователю не менее 14 лет.
+    Возвращает True, если дата корректна, иначе False.
+    """
     try:
-        # Сначала проверяем формат даты
-        birth_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        today = datetime.now().date()
+        # Проверяем общий формат (допускаем цифры без ведущих нулей)
+        if not re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', date_str):
+            raise ValueError("Неверный формат")
+            
+        # Разбиваем на компоненты и преобразуем в числа
+        parts = date_str.split('-')
+        year = int(parts[0])
+        month = int(parts[1])
+        day = int(parts[2])
         
-        if birth_date > today:
-            print('Ошибка: дата рождения не может быть в будущем')
+        # Проверяем год
+        current_year = datetime.now().year
+        if year < 1900 or year > current_year:
+            print(f"Ошибка: Некорректный год (должен быть между 1900 и {current_year})")
             return False
             
-        # Вычисляем возраст
+        # Проверяем месяц
+        if month < 1 or month > 12:
+            print("Ошибка: Месяц должен быть от 1 до 12")
+            return False
+            
+        # Проверяем день
+        days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        if is_leap_year(year):
+            days_in_month[1] = 29
+            
+        if day < 1 or day > days_in_month[month-1]:
+            print(f"Ошибка: В {month}-м месяце должно быть от 1 до {days_in_month[month-1]} дней")
+            return False
+        
+        # Проверяем возраст (не менее 14 лет)
+        # Нормализуем дату (добавляем ведущие нули для корректного парсинга)
+        normalized_date = f"{year}-{month:02d}-{day:02d}"
+        birth_date = datetime.strptime(normalized_date, '%Y-%m-%d').date()
+        today = datetime.now().date()
         age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
         
         if age < 14:
             print('Ошибка: для регистрации пользователь должен быть не младше 14 лет')
             return False
-        
+            
         return True
+        
     except ValueError as e:
-        # Проверяем, связано ли исключение с несуществующей датой
-        if "day is out of range for month" in str(e) or "month must be in 1..12" in str(e):
-            print('Ошибка: введена некорректная дата (несуществующий день или месяц)')
-        else:
-            print('Ошибка: Неверный формат даты. Используйте ГГГГ-ММ-ДД')
+        print(f"Ошибка: {str(e)}. Используйте формат ГГГГ-ММ-ДД или ГГГГ-М-Д")
         return False
     
 def get_valid_input(prompt: str, validator: callable, *args, **kwargs) -> str:

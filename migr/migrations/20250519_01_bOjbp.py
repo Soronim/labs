@@ -27,5 +27,3 @@ steps = [
         "DROP PROCEDURE IF EXISTS register_user(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, DATE)"
     )
 ]
-#Почитать про хранмые процедуры 
-#Может ли INOUT user_id если явно указать user_id создать пользователя с этим id
