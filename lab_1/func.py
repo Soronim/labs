@@ -25,18 +25,16 @@ def user_retrieve_all(conn):
 def register_user(conn, login, password, family, name, patronymic, birth_date):
     try:
         with conn.cursor() as cursor:
-            # Вызываем процедуру регистрации
+            # Вызывов процедурки
             cursor.execute(
-                "CALL register_user(%s, %s, %s, %s, %s, %s,NULL)",
-                (login, password, family, name, patronymic, birth_date)
+                "CALL register_user(%s, %s, %s, %s, %s, %s, %s)",
+                (login, password, family, name, patronymic, birth_date, None)
             )
-            
-            # Получаем ID только что созданного пользователя
-            cursor.execute("SELECT id FROM users WHERE login = %s", (login,))
+            # Получаем OUT значением
+            cursor.execute("SELECT %s", (cursor.fetchone()[0],))
             user_id = cursor.fetchone()[0]
-            
             conn.commit()
-            return user_id  # Возвращаем ID пользователя
+            return user_id
             
     except Exception as e:
         conn.rollback()

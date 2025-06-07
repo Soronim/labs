@@ -98,29 +98,31 @@ def validate_login(login: str, conn=None) -> bool:
 
 
 def validate_password(password: str) -> bool:
-    """Проверяет сложность пароля"""
+    """Проверяет сложность пароля и выводит все ошибки сразу"""
+    errors = []
+    
     if not password:
-        print('Ошибка: пароль не может быть пустым')
-        return False
+        errors.append('пароль не может быть пустым')
     
     if len(password) < 8:
-        print('Ошибка: пароль должен содержать минимум 8 символов')
-        return False
+        errors.append('пароль должен содержать минимум 8 символов')
     
     if not re.search(r'[A-Z]', password):
-        print('Ошибка: пароль должен содержать хотя бы одну заглавную букву')
-        return False
+        errors.append('пароль должен содержать хотя бы одну заглавную букву')
     
     if not re.search(r'[a-z]', password):
-        print('Ошибка: пароль должен содержать хотя бы одну строчную букву')
-        return False
+        errors.append('пароль должен содержать хотя бы одну строчную букву')
     
     if not re.search(r'[0-9]', password):
-        print('Ошибка: пароль должен содержать хотя бы одну цифру')
-        return False
+        errors.append('пароль должен содержать хотя бы одну цифру')
     
     if not re.search(r'[^A-Za-z0-9]', password):
-        print('Ошибка: пароль должен содержать хотя бы один специальный символ')
+        errors.append('пароль должен содержать хотя бы один специальный символ')
+    
+    if errors:
+        print('Ошибки в пароле:')
+        for error in errors:
+            print(f'- {error}')
         return False
     
     return True
@@ -128,6 +130,7 @@ def validate_password(password: str) -> bool:
 def validate_date(date_str: str) -> bool:
     """Проверяет корректность даты и что возраст пользователя не менее 14 лет"""
     try:
+        # Сначала проверяем формат даты
         birth_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         today = datetime.now().date()
         
@@ -141,15 +144,20 @@ def validate_date(date_str: str) -> bool:
         if age < 14:
             print('Ошибка: для регистрации пользователь должен быть не младше 14 лет')
             return False
-            
+        
         return True
-    except ValueError:
-        print('Ошибка: Неверный формат даты. Используйте ГГГГ-ММ-ДД')
+    except ValueError as e:
+        # Проверяем, связано ли исключение с несуществующей датой
+        if "day is out of range for month" in str(e) or "month must be in 1..12" in str(e):
+            print('Ошибка: введена некорректная дата (несуществующий день или месяц)')
+        else:
+            print('Ошибка: Неверный формат даты. Используйте ГГГГ-ММ-ДД')
         return False
-
+    
 def get_valid_input(prompt: str, validator: callable, *args, **kwargs) -> str:
     """Получает валидный ввод от пользователя с немедленной проверкой"""
     while True:
         value = input(prompt).strip()
         if validator(value, *args, **kwargs):
             return value
+        
