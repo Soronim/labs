@@ -2,7 +2,7 @@ from connection import get_db_connection
 import print_user as pu
 from datetime import datetime
 import psycopg2
-from func import register_user_interactive, show_all_users
+from func import register_user_interactive, show_all_users,show_tag_menu
 import re
 
 
@@ -12,14 +12,13 @@ menu = '''
 Выберите операцию:
 1. Зарегистрировать пользователя
 2. Показать всех пользователей
+3. Управление тегами
 =============================
 0. Выйти
 '''
 
 def main():
-    
     """Основная функция приложения"""
-    
     conn = get_db_connection()
     
     try:
@@ -37,6 +36,9 @@ def main():
 
                 case '2':
                     show_all_users(conn)
+                    
+                case '3':
+                    show_tag_menu(conn)
 
                 case _:
                     print('\nНеверная команда')

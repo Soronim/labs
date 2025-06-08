@@ -23,7 +23,8 @@ steps = [
         CONSTRAINT no_double_spaces_patronymic CHECK (patronymic !~ '\s{2}' OR patronymic IS NULL)
         CONSTRAINT no_leading_trailing_spaces_patronymic CHECK (patronymic = trim(patronymic) OR patronymic IS NULL),
     birth_date DATE NOT NULL
-        CONSTRAINT valid_birth_date CHECK (birth_date > '1900-01-01' AND birth_date <= current_date)
+        CONSTRAINT valid_birth_date CHECK (birth_date > '1900-01-01' AND birth_date <= current_date),
+    tags INTEGER[] DEFAULT '{}'
 );
          """)
 ]

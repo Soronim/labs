@@ -16,7 +16,8 @@ def print_users(users):
         ("Фамилия", 'family'),
         ("Имя", 'name'),
         ("Отчество", 'patronymic'),
-        ("Дата рождения", 'birth_date')
+        ("Дата рождения", 'birth_date'),
+        ("Теги", 'tags')  # Добавляем столбец для тегов
     ]
     
     # Преобразуем данные пользователей в удобный формат
@@ -25,6 +26,13 @@ def print_users(users):
         reg_date = user[2].strftime("%Y-%m-%d %H:%M:%S") if isinstance(user[2], datetime) else str(user[2])
         birth_date = user[6].strftime("%Y-%m-%d") if isinstance(user[6], datetime) else str(user[6])
         
+        # Обрабатываем теги (предполагаем, что они находятся в user[7])
+        tags = user[7] if len(user) > 7 else []
+        if tags and isinstance(tags, list):
+            tags_str = ", ".join(str(tag) for tag in tags) if tags else "нет тегов"
+        else:
+            tags_str = "нет данных"
+        
         formatted_users.append({
             'id': str(user[0]),
             'login': str(user[1]),
@@ -32,7 +40,8 @@ def print_users(users):
             'family': str(user[3]),
             'name': str(user[4]),
             'patronymic': str(user[5]) if user[5] else '-',
-            'birth_date': birth_date
+            'birth_date': birth_date,
+            'tags': tags_str  # Добавляем строку с тегами
         })
     
     # Вычисляем максимальную ширину для каждого столбца
