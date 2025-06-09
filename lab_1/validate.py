@@ -1,16 +1,9 @@
 import print_user as pu
-from datetime import datetime
+from datetime import datetime,date
 import psycopg2
 import re
 
-def is_leap_year(year):
-    """Проверяет, является ли год високосным"""
-    if year % 4 != 0:
-        return False
-    elif year % 100 != 0:
-        return True
-    else:
-        return year % 400 == 0
+
 
 def capitalize_name(name):
     """Приводит имя к виду с заглавной первой буквой, остальные - строчные"""
@@ -144,42 +137,30 @@ def validate_date(date_str):
     Возвращает True, если дата корректна, иначе False.
     """
     try:
-       
+        # Проверка формата строки
         if not re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', date_str):
             raise ValueError("format")
             
-        year, month, day = map(int, date_str.split('-'))
-        
-        
-        current_year = datetime.now().year
-        if year < 1900:
+        # Парсинг даты
+        try:
+            birth_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            print("Ошибка: Несуществующая дата")
+            return False
+            
+        # Проверка года
+        if birth_date.year < 1900:
             print("Ошибка: Год не может быть меньше 1900")
             return False
-    
-        
-        if month < 1 or month > 12:
-            print("Ошибка: Несуществующая дата")
-            return False
             
-        
-        days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-        if is_leap_year(year):
-            days_in_month[1] = 29
-            
-            
-        if day > days_in_month[month-1]:
-            print("Ошибка: Несуществующая дата")
-            return False
-        
-        
-        birth_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        today = datetime.now().date()
-        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-        
-        if age < 0:
+        # Проверка что дата не в будущем
+        today = date.today()
+        if birth_date > today:
             print("Ошибка: Дата рождения не может быть в будущем")
             return False
             
+        # Проверка возраста (не менее 14 лет)
+        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
         if age < 14:
             print('Ошибка: Для регистрации пользователь должен быть не младше 14 лет')
             return False
@@ -188,7 +169,7 @@ def validate_date(date_str):
         
     except ValueError as e:
         if str(e) == "format":
-            print("Ошибка: Неверный формат даты. Используйте ГГГГ-ММ-ДД")
+            print("Ошибка: Неверный формат даты")
         else:
             print("Ошибка: Некорректная дата")
         return False
